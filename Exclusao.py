@@ -3,6 +3,7 @@ VETOR = []
 TOTAL = 0
 ARVORE = None
 
+
 class Cliente:
     def __init__(self, codigo, nome, endereco, cidade, uf, status='1'):
         self.codigo = codigo
@@ -46,14 +47,36 @@ def buscar(raiz, codigo):
 def excluir(raiz, codigo):
     if codigo == raiz.codigo and raiz.status == '1':
         raiz.status = '0'
-        print("Cliente excluido")
+        print("cliente excluido")
     elif codigo == raiz.codigo and raiz.status == '0':
-        print("Cliente ja foi excluido")
+        print("cliente ja foi excluido")
         return raiz
     elif codigo < raiz.codigo:
         return excluir(raiz.esquerda, codigo)
     else:
         return excluir(raiz.direita, codigo)
+
+
+def med(raiz):
+    if (raiz is not None):
+        if raiz.status == '1':
+            print(f"codigo: {raiz.codigo}, nome: {VETOR[raiz.endereco].nome}, endereco: {VETOR[raiz.endereco].endereco}, cidade: {VETOR[raiz.endereco].cidade}, UF: {VETOR[raiz.endereco].uf}")
+        med(raiz.esquerda)
+        med(raiz.direita)
+
+def emd(raiz):
+    if (raiz is not None):
+        emd(raiz.esquerda)
+        if raiz.status == '1':
+            print(f"codigo: {raiz.codigo}, nome: {VETOR[raiz.endereco].nome}, endereco: {VETOR[raiz.endereco].endereco}, cidade: {VETOR[raiz.endereco].cidade}, UF: {VETOR[raiz.endereco].uf}")
+        emd(raiz.direita)
+
+def edm(raiz):
+    if (raiz is not None):
+        edm(raiz.esquerda)
+        edm(raiz.direita)
+        if raiz.status == '1': 
+            print(f"codigo: {raiz.codigo}, nome: {VETOR[raiz.endereco].nome}, endereco: {VETOR[raiz.endereco].endereco}, cidade: {VETOR[raiz.endereco].cidade}, UF: {VETOR[raiz.endereco].uf}")
 
 
 while True:
@@ -94,6 +117,20 @@ while True:
     elif opcao == 3:
         cod = int(input("digite o codigo para exclusao: "))
         ARVORE = excluir(ARVORE, cod)
+    
+    elif opcao == 4:
+        print("seleipone o tipo de percurso:")
+        print("1 pre ordem med")
+        print("2 em ordem emd")
+        print("3 pos ordem edm")
+        tipo_percurso = int(input("opcao: "))
+        if (tipo_percurso == 1):
+            med(ARVORE)
+        elif (tipo_percurso == 2):
+            emd(ARVORE)
+        elif (tipo_percurso == 3):
+            edm(ARVORE)
+
 
     elif opcao == 0:
         break

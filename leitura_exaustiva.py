@@ -83,6 +83,7 @@ while True:
     print("1 inserir cliente")
     print("2 buscar cliente")
     print("3 excluir cliente")
+    print("4 leitura exaustiva")
     print("0 sair")
     opcao = int(input("selecione uma opcao: "))
 
