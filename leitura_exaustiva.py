@@ -1,139 +1,105 @@
-MAX = 99
-VETOR = []
-TOTAL = 0
-ARVORE = None
+import csv
+import os
 
+ARQUIVO = "clientes.csv"
 
-class Cliente:
-    def __init__(self, codigo, nome, endereco, cidade, uf, status='1'):
-        self.codigo = codigo
-        self.nome = nome
-        self.endereco = endereco
-        self.cidade = cidade
-        self.uf = uf
-        self.status = status
+# ------------------------------
+# Classe da Árvore Binária
+# ------------------------------
+class No:
+    def __init__(self, chave, pos):
+        self.chave = chave
+        self.pos = pos    # posição (linha) no CSV
+        self.esq = None
+        self.dir = None
 
-
-class Indice:
-    def __init__(self, codigo, endereco, status='1'):
-        self.codigo = codigo
-        self.endereco = endereco
-        self.esquerda = None
-        self.direita = None 
-        self.status = status
-
-
-def inserir(raiz, codigo, endereco):
+def inserir(raiz, chave, pos):
     if raiz is None:
-        return Indice(codigo, endereco)
-    elif codigo < raiz.codigo:
-        raiz.esquerda = inserir(raiz.esquerda, codigo, endereco)
-    elif codigo > raiz.codigo:
-        raiz.direita = inserir(raiz.direita, codigo, endereco)
+        return No(chave, pos)
+    if chave < raiz.chave:
+        raiz.esq = inserir(raiz.esq, chave, pos)
+    elif chave > raiz.chave:
+        raiz.dir = inserir(raiz.dir, chave, pos)
+    return raiz
+
+def buscar(raiz, chave):
+    if raiz is None or raiz.chave == chave:
         return raiz
+    if chave < raiz.chave:
+        return buscar(raiz.esq, chave)
+    return buscar(raiz.dir, chave)
 
+# ------------------------------
+# Funções para manipular CSV
+# ------------------------------
+def inicializar_csv():
+    if not os.path.isfile(ARQUIVO):
+        with open(ARQUIVO, 'w', newline='') as arq:
+            writer = csv.writer(arq)
+            writer.writerow(["codigo", "nome", "endereco", "cidade", "uf", "status"])
 
-def buscar(raiz, codigo):
-    if raiz is None:
-        return -1
-    if codigo == raiz.codigo and raiz.status == '1':
-        return raiz.endereco
-    elif codigo < raiz.codigo:
-        return buscar(raiz.esquerda, codigo)
-    else:
-        return buscar(raiz.direita, codigo)
+def inserir_cliente_csv():
+    codigo = int(input("Codigo: "))
+    nome = input("Nome: ")
+    endereco = input("Endereco: ")
+    cidade = input("Cidade: ")
+    uf = input("UF: ")
 
+    # adiciona no CSV
+    with open(ARQUIVO, 'a', newline='') as arq:
+        writer = csv.writer(arq)
+        writer.writerow([codigo, nome, endereco, cidade, uf, "1"])  # status=1 ativo
 
-def excluir(raiz, codigo):
-    if codigo == raiz.codigo and raiz.status == '1':
-        raiz.status = '0'
-        print("cliente excluido")
-    elif codigo == raiz.codigo and raiz.status == '0':
-        print("cliente ja foi excluido")
-        return raiz
-    elif codigo < raiz.codigo:
-        return excluir(raiz.esquerda, codigo)
-    else:
-        return excluir(raiz.direita, codigo)
+    # descobrir a linha em que foi salvo
+    with open(ARQUIVO, 'r') as arq:
+        linhas = list(csv.reader(arq))
+        pos = len(linhas) - 1  # posição da linha (sem contar cabeçalho)
 
+    return codigo, pos
 
-def med(raiz):
-    if (raiz is not None):
-        if raiz.status == '1':
-            print(f"codigo: {raiz.codigo}, nome: {VETOR[raiz.endereco].nome}, endereco: {VETOR[raiz.endereco].endereco}, cidade: {VETOR[raiz.endereco].cidade}, UF: {VETOR[raiz.endereco].uf}")
-        med(raiz.esquerda)
-        med(raiz.direita)
-
-def emd(raiz):
-    if (raiz is not None):
-        emd(raiz.esquerda)
-        if raiz.status == '1':
-            print(f"codigo: {raiz.codigo}, nome: {VETOR[raiz.endereco].nome}, endereco: {VETOR[raiz.endereco].endereco}, cidade: {VETOR[raiz.endereco].cidade}, UF: {VETOR[raiz.endereco].uf}")
-        emd(raiz.direita)
-
-def edm(raiz):
-    if (raiz is not None):
-        edm(raiz.esquerda)
-        edm(raiz.direita)
-        if raiz.status == '1': 
-            print(f"codigo: {raiz.codigo}, nome: {VETOR[raiz.endereco].nome}, endereco: {VETOR[raiz.endereco].endereco}, cidade: {VETOR[raiz.endereco].cidade}, UF: {VETOR[raiz.endereco].uf}")
-
-
-while True:
-    print("1 inserir cliente")
-    print("2 buscar cliente")
-    print("3 excluir cliente")
-    print("4 leitura exaustiva")
-    print("0 sair")
-    opcao = int(input("selecione uma opcao: "))
-
-    if opcao == 1:
-        if TOTAL >= MAX:
-            print("overflow")
-            continue
-
-        codigo = int(input("codigo: "))
-        nome = input("nome: ")
-        endereco = input("endereco: ")
-        cidade = input("cidade: ")
-        uf = input("uf: ")
-
-        VETOR.append(Cliente(codigo, nome, endereco, cidade, uf))
-        ARVORE = inserir(ARVORE, codigo, TOTAL)
-        print(f"cliente inserido na posicao {TOTAL}.")
-        TOTAL += 1
-
-    elif opcao == 2:
-        cod = int(input("digite o codigo para busca: "))
-        pos = buscar(ARVORE, cod)
-        if pos == -1:
-            print("nao encontrado")
+def mostrar_cliente(pos):
+    with open(ARQUIVO, 'r') as arq:
+        leitor = list(csv.reader(arq))
+        if pos < len(leitor):
+            print("Dados do cliente:")
+            print(f"Codigo: {leitor[pos][0]}")
+            print(f"Nome: {leitor[pos][1]}")
+            print(f"Endereco: {leitor[pos][2]}")
+            print(f"Cidade: {leitor[pos][3]}")
+            print(f"UF: {leitor[pos][4]}")
+            print(f"Status: {leitor[pos][5]}")
         else:
-            print("cliente encontrado")
-            print("nome:", VETOR[pos].nome)
-            print("endereco:", VETOR[pos].endereco)
-            print("cidade:", VETOR[pos].cidade)
-            print("uf:", VETOR[pos].uf)
+            print("Posição inválida no CSV.")
 
-    elif opcao == 3:
-        cod = int(input("digite o codigo para exclusao: "))
-        ARVORE = excluir(ARVORE, cod)
-    
-    elif opcao == 4:
-        print("seleipone o tipo de percurso:")
-        print("1 pre ordem med")
-        print("2 em ordem emd")
-        print("3 pos ordem edm")
-        tipo_percurso = int(input("opcao: "))
-        if (tipo_percurso == 1):
-            med(ARVORE)
-        elif (tipo_percurso == 2):
-            emd(ARVORE)
-        elif (tipo_percurso == 3):
-            edm(ARVORE)
+# ------------------------------
+# Programa Principal
+# ------------------------------
+def main():
+    inicializar_csv()
+    arvore = None
 
+    while True:
+        print("\n--- MENU ---")
+        print("1. Inserir cliente")
+        print("2. Buscar cliente")
+        print("3. Sair")
+        op = input("Escolha: ")
 
-    elif opcao == 0:
-        break
+        if op == "1":
+            codigo, pos = inserir_cliente_csv()
+            arvore = inserir(arvore, codigo, pos)
+            print(f"Cliente {codigo} inserido na linha {pos}.")
+        elif op == "2":
+            chave = int(input("Digite o codigo: "))
+            no = buscar(arvore, chave)
+            if no:
+                mostrar_cliente(no.pos)
+            else:
+                print("Cliente não encontrado na árvore.")
+        elif op == "3":
+            break
+        else:
+            print("Opção inválida.")
 
-print("programa fechado")
+if __name__ == "__main__":
+    main()
